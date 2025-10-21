@@ -1,0 +1,14 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+venv/
+.env
+*.egg-info/
+*.dist-info/
+src/model_pipeline.joblib
+data/*.csv
+!data/credit_risk_sample.csv
+images/*.png
+!images/roc_curve.png
+!images/feature_importance.png
