@@ -1,0 +1,6 @@
+annual_income,current_balance,credit_limit,utilization_ratio,late_payments_24m,age,tenure_years,customer_segment,region,risk_label
+72000,2500,12000,0.208,0,34,4.5,salaried,west,good
+42000,6400,9000,0.711,2,29,0.8,self-employed,south,bad
+58000,1800,15000,0.120,1,45,6.1,salaried,midwest,good
+31000,7000,8000,0.875,3,38,0.6,self-employed,northeast,bad
+96000,1200,22000,0.055,0,52,10.2,retired,west,good
