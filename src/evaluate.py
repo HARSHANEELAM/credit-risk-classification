@@ -14,11 +14,12 @@ IMAGES_DIR = "images"
 def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
 
-def plot_roc_curve(y_true, y_proba, save_path):
-    fpr, tpr, _ = roc_curve(y_true, y_proba)
+def plot_roc_curve(y_true_bin, y_proba, save_path):
+    # y_true_bin must be 0/1; 1 means "positive" (here: "bad")
+    fpr, tpr, _ = roc_curve(y_true_bin, y_proba)
     plt.figure()
     plt.plot(fpr, tpr, label="ROC curve")
-    plt.plot([0,1], [0,1], linestyle="--")
+    plt.plot([0, 1], [0, 1], linestyle="--")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("ROC Curve")
@@ -27,23 +28,25 @@ def plot_roc_curve(y_true, y_proba, save_path):
     plt.savefig(save_path, dpi=160)
     plt.close()
 
-def plot_permutation_importance(model, X, y, save_path, top_n=15):
-    # get feature names after preprocessing
+def plot_permutation_importance(model, X, y_true_bin, save_path, top_n=15):
+    # Get the ColumnTransformer inside the "prep" pipeline step (prep -> preprocess)
     prep = model.named_steps["prep"]
     try:
-        feature_names = prep.get_feature_names_out()
+        ct = prep.named_steps["preprocess"]
+        feature_names = ct.get_feature_names_out()
     except Exception:
-        # fallback to generic names
+        # Fallback if names aren’t available
         feature_names = np.array([f"f_{i}" for i in range(X.shape[1])])
 
-    # compute permutation importance (works for any estimator)
-    r = permutation_importance(model, X, y, scoring="roc_auc", n_repeats=5, random_state=42, n_jobs=-1)
+    # Works with any estimator; we score by ROC-AUC
+    r = permutation_importance(
+        model, X, y_true_bin, scoring="roc_auc", n_repeats=5, random_state=42, n_jobs=-1
+    )
 
     importances = r.importances_mean
     idx = np.argsort(importances)[-top_n:]
     top_feats = feature_names[idx]
     top_vals = importances[idx]
-
     order = np.argsort(top_vals)
     top_feats = top_feats[order]
     top_vals = top_vals[order]
@@ -62,21 +65,22 @@ def main():
 
     df = pd.read_csv(DATA_PATH)
     X = df.drop(columns=[TARGET])
-    y = df[TARGET]
+    y_str = df[TARGET]                  # "bad" / "good"
+    y_bin = (y_str == "bad").astype(int)  # 1 = bad (positive class), 0 = good
 
     model = joblib.load(MODEL_PATH)
 
-    proba = model.predict_proba(X)[:, 1]
+    proba = model.predict_proba(X)[:, 1]   # probability of "bad"
     preds = model.predict(X)
 
-    auc = roc_auc_score(y, proba)
-    print("ROC-AUC:", auc)
-    print("\nClassification Report:\n", classification_report(y, preds))
-    print("\nConfusion Matrix:\n", confusion_matrix(y, preds))
+    # Keep human-readable report on original string labels
+    print("ROC-AUC:", roc_auc_score(y_bin, proba))
+    print("\nClassification Report:\n", classification_report(y_str, preds))
+    print("\nConfusion Matrix:\n", confusion_matrix(y_str, preds, labels=["bad", "good"]))
 
-    # save images
-    plot_roc_curve(y, proba, os.path.join(IMAGES_DIR, "roc_curve.png"))
-    plot_permutation_importance(model, X, y, os.path.join(IMAGES_DIR, "feature_importance.png"))
+    # Save charts
+    plot_roc_curve(y_bin, proba, os.path.join(IMAGES_DIR, "roc_curve.png"))
+    plot_permutation_importance(model, X, y_bin, os.path.join(IMAGES_DIR, "feature_importance.png"))
 
     print("\nSaved charts to images/roc_curve.png and images/feature_importance.png")
 
