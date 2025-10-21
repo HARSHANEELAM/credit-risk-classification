@@ -43,6 +43,28 @@ credit-risk-classification/
 
 ---
 
+### 📈 Visuals
+The following charts are automatically generated after running `evaluate.py`:
+
+![ROC Curve](images/roc_curve.png)
+![Feature Importance](images/feature_importance.png)
+
+---
+
+### 🧠 Learnings
+- Handling imbalanced financial datasets with feature scaling and encoding.  
+- Evaluating multiple classifiers using consistent ML pipelines.  
+- Applying permutation importance and ROC curves for model interpretability.  
+- Automating model training, logging, and visualization workflows.  
+- Exporting trained pipelines for reproducible deployment.
+
+---
+
+### 🏷️ Tags
+`#MachineLearning` `#CreditRisk` `#Classification` `#Python` `#ScikitLearn` `#FinanceAnalytics`
+
+
+
 ### 🧪 Setup Instructions
 ```bash
 # Clone the repository
@@ -62,3 +84,5 @@ python src/generate_synthetic.py
 # Train and evaluate models
 python src/train.py
 python src/evaluate.py
+
+
